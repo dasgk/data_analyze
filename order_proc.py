@@ -6,6 +6,7 @@ import datetime
 import time
 import os
 
+
 class OrderPredicts():
     def __init__(self):
         self.order_info = Series()
@@ -37,8 +38,17 @@ class OrderPredicts():
         month = int(date_obj.strftime("%m"))
         day = int(date_obj.strftime("%d"))
         if month == 10:
+            # 国庆节
             if day >= 1 and day <= 7:
                 return 1
+
+        if month == 12:
+            # 元旦
+            if day == 30 or day == 31:
+                return 1
+        if month == 1 and day == 1:
+            # 元旦
+            return 1
         return 0
 
     def date_order_counts(self, date='2018-09-20'):
@@ -54,6 +64,34 @@ class OrderPredicts():
             self.order_info = date_count
 
         return self.order_info.get(date, 0)
+
+    '''
+        天气因素量化
+        天气有 天气描述，量化的值
+        晴       6
+        阴       5
+        多云     4
+        雾       3
+        小雨     2
+        雨夹雪   1
+    '''
+
+    def weather_qua(self, row):
+        temperature = row['temperature']
+        weather = row['weather']
+        if weather == '晴':
+            return 6
+        if weather == '阴':
+            return 5
+        if weather == '多云':
+            return 4
+        if weather == '雾':
+            return 3
+        if weather == '小雨':
+            return 2
+        if weather == '雨夹雪':
+            return 1
+        return 0
 
     '''
      数据预处理，得到订单列表，其中包含天气信息
@@ -96,9 +134,12 @@ class OrderPredicts():
         museum_weather["week"] = museum_weather["date"].map(self.time_to_week)
         museum_weather["is_special_day"] = museum_weather["date"].map(self.is_special_day)
         # 去掉9月27号之前 的数据，并且去掉order_count是0的数据
-        museum_weather = museum_weather.loc[museum_weather['date']>'2018-09-27']
-        #去掉订单量是0的数据
+        museum_weather = museum_weather.loc[museum_weather['date'] > '2018-09-27']
+        # 去掉订单量是0的数据
         museum_weather = museum_weather.loc[museum_weather['order_count'] > 0]
+        # 最后将天气因素量化成一个数值， axis是必须的
+        museum_weather['weather_quantization'] = museum_weather.apply(lambda row: self.weather_qua(row), axis=1)
+        # print(museum_weather['weather'].value_counts())
         return museum_weather
 
     '''
@@ -111,7 +152,7 @@ class OrderPredicts():
         # 获得需要处理的内容
         order_df = self.data_preproc()
         # 处理流程，判断数据
-        print("有效订单数据总量:", len(order_df))
+        # print("有效订单数据总量:", len(order_df))
         '''预测订单量的有关因素包括，地区（这个其实可以算是无关量，因为特定博物馆订单量无论怎么变都是在一个地方的），
                                     天气：
                                     温度：
@@ -123,10 +164,4 @@ class OrderPredicts():
         if os.path.exists("tzzs_data2.csv"):
             os.remove("tzzs_data2.csv")
         order_df.to_csv("tzzs_data2.csv")
-
-
-
-if __name__ == '__main__':
-    handle = OrderPredicts()
-    handle.data_proc()
-# date_order_counts()
+        return "tzzs_data2.csv"
