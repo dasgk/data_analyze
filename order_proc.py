@@ -25,13 +25,22 @@ class OrderPredicts():
     '''
         作者：周建业
         时间：2019-01-18
-        描述：将日期转换为周格式
+        描述：将日期转换为周格式，正常周六周日返回1 特殊节假日返回1 其他返回0
     '''
 
-    def time_to_week(self, time_str):
+    def time_to_week(self, row):
+        time_str = row['date']
         date_obj = datetime.datetime.strptime(time_str, "%Y-%m-%d")
         week = int(date_obj.strftime("%w"))
-        return week
+        if week == 6 or week == 0:
+            return 1
+        if row['is_special_day'] == 1:
+            return 1
+        return 0
+
+    '''
+        正常国庆节和元旦 返回1，其他返回0
+    '''
 
     def is_special_day(self, time_str):
         date_obj = datetime.datetime.strptime(time_str, "%Y-%m-%d")
@@ -66,6 +75,22 @@ class OrderPredicts():
         return self.order_info.get(date, 0)
 
     '''
+    开始说温度的影响 25 到-5，是温度区间，所有温度，自动加6，如果还小于0，则修正成0
+                    大于 25的，则反向增长，
+    '''
+
+    def temperature_que(self, temperature):
+        temperature = int(temperature)
+        if temperature <= 25 and temperature >= -5:
+            temperature = temperature + 6
+        else:
+            if temperature > 25:
+                temperature = temperature + 6 - 2 * (temperature - 25)
+            else:
+                temperature = 0
+        return temperature
+
+    '''
         天气因素量化
         天气有 天气描述，量化的值
         晴       6
@@ -74,10 +99,12 @@ class OrderPredicts():
         雾       3
         小雨     2
         雨夹雪   1
+
     '''
 
     def weather_qua(self, row):
-        temperature = row['temperature']
+
+        # 到此temperature就落到了0-31之间
         weather = row['weather']
         if weather == '晴':
             return 6
@@ -130,16 +157,19 @@ class OrderPredicts():
         museum_weather.rename(columns={"museum_id": "rent_museum_id"}, inplace=True)
 
         museum_weather['order_count'] = museum_weather['date'].map(self.date_order_counts)
+        museum_weather['temperature'] = museum_weather['temperature'].map(self.temperature_que)
         # 添加列，判断当天是否是周末
-        museum_weather["week"] = museum_weather["date"].map(self.time_to_week)
+
         museum_weather["is_special_day"] = museum_weather["date"].map(self.is_special_day)
+        museum_weather["week"] = museum_weather.apply(lambda row: self.time_to_week(row), axis=1)
         # 去掉9月27号之前 的数据，并且去掉order_count是0的数据
         museum_weather = museum_weather.loc[museum_weather['date'] > '2018-09-27']
         # 去掉订单量是0的数据
         museum_weather = museum_weather.loc[museum_weather['order_count'] > 0]
         # 最后将天气因素量化成一个数值， axis是必须的
         museum_weather['weather_quantization'] = museum_weather.apply(lambda row: self.weather_qua(row), axis=1)
-        # print(museum_weather['weather'].value_counts())
+        # 修正week的值，如果is_special_day是1的话，week修正为1
+        museum_weather['weather_quantization'] = museum_weather.apply(lambda row: self.weather_qua(row), axis=1)
         return museum_weather
 
     '''

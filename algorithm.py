@@ -21,10 +21,10 @@ class Algorithm():
 
     def bayes_formutiple(self):
         data_df = pd.read_csv("tzzs_data2.csv")
-        X_data_df =data_df.loc[:,['week','is_special_day','weather_quantization']]
+        X_data_df = data_df.loc[:, ['week', 'is_special_day', 'weather_quantization', 'temperature']]
         X = X_data_df.values
-        y = data_df.loc[:,'order_count']
-        clf = MultinomialNB(alpha=2.0)
+        y = data_df.loc[:, 'order_count']
+        clf = MultinomialNB(alpha=0.50)
         clf.fit(X, y)
-        result=clf.predict([[5,1,4],[5,0,4]])
+        result = clf.predict([[1, 1, 6, 25]])
         print(result)
