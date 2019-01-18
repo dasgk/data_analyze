@@ -26,4 +26,5 @@ class Algorithm():
         y = data_df.loc[:,'order_count']
         clf = MultinomialNB(alpha=2.0)
         clf.fit(X, y)
-        print(clf.class_log_prior_)
+        result=clf.predict([[5,1,4],[5,0,4]])
+        print(result)
