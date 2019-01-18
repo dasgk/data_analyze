@@ -4,7 +4,7 @@ from pandas import DataFrame, Series
 import numpy as np
 import datetime
 import time
-
+import os
 
 class OrderPredicts():
     def __init__(self):
@@ -95,6 +95,10 @@ class OrderPredicts():
         # 添加列，判断当天是否是周末
         museum_weather["week"] = museum_weather["date"].map(self.time_to_week)
         museum_weather["is_special_day"] = museum_weather["date"].map(self.is_special_day)
+        # 去掉9月27号之前 的数据，并且去掉order_count是0的数据
+        museum_weather = museum_weather.loc[museum_weather['date']>'2018-09-27']
+        #去掉订单量是0的数据
+        museum_weather = museum_weather.loc[museum_weather['order_count'] > 0]
         return museum_weather
 
     '''
@@ -116,7 +120,10 @@ class OrderPredicts():
                                     是否是特殊节假日
         '''
 
+        if os.path.exists("tzzs_data2.csv"):
+            os.remove("tzzs_data2.csv")
         order_df.to_csv("tzzs_data2.csv")
+
 
 
 if __name__ == '__main__':
