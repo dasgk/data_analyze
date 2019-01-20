@@ -193,7 +193,7 @@ class OrderPredicts():
         try:
             if os.path.exists("tzzs_data2.csv"):
                 os.remove("tzzs_data2.csv")
-                order_df.to_csv("tzzs_data2.csv")
+            order_df.to_csv("tzzs_data2.csv")
         except IOError:
             print('文件写入失败,操作终止')
             return ""
