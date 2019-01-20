@@ -22,4 +22,4 @@ if path!="":
     y = data_df.loc[:, 'order_count']
 
     handle_algorithm = RF()
-    handle_algorithm.train(X,y,[[1, 1, 6, 25]])
+    handle_algorithm.train(X,y,[[1, 0, 1, 25]])
