@@ -12,14 +12,11 @@ class RF(Algorithm):
         self.best_n_estimators = 0
         self.best_acc = 0
 
-    def train(self, mall_id, X, shop_ids, TEST, row_ids):
+    def train(self, X, y, TEST):
 
         # 处理标签
-        lbl = preprocessing.LabelEncoder()
-        lbl.fit(shop_ids)
-        y = lbl.transform(shop_ids)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-
+#  https://blog.csdn.net/jeryjeryjery/article/details/78882661
         # 寻参
         for n_estimators_size in self.n_estimators_options:
             alg = RandomForestClassifier(n_jobs=-1, n_estimators=n_estimators_size)
@@ -33,7 +30,7 @@ class RF(Algorithm):
             print('[n_estimators, acc]:', n_estimators_size, acc)
 
         # 用最优参数进行训练
-        rf = RandomForestClassifier(n_jobs=-1, n_estimators=self.n_estimators)
+        rf = RandomForestClassifier(n_jobs=-1, n_estimators=self.best_n_estimators)
         rf.fit(X, y)
 
         # 预测标签
@@ -42,6 +39,5 @@ class RF(Algorithm):
         # predict_prob = rf.predict_prob(TEST)
 
         # 转换为预测标签为真实标签
-        predict = [lbl.inverse_transform(int(x)) for x in predict]
-
+        print(predict)
 
