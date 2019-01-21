@@ -1,10 +1,8 @@
 from sklearn.ensemble import RandomForestClassifier
-from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 
-from algorithm import Algorithm
 
-class RF(Algorithm):
+class RF():
     def __init__(self):
 
         # 对参数 n 进行寻参，这里的参数范围是根据实际情况定义的
@@ -16,7 +14,7 @@ class RF(Algorithm):
 
         # 处理标签
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-#  https://blog.csdn.net/jeryjeryjery/article/details/78882661
+        #  https://blog.csdn.net/jeryjeryjery/article/details/78882661
         # 寻参
         for n_estimators_size in self.n_estimators_options:
             alg = RandomForestClassifier(n_jobs=-1, n_estimators=n_estimators_size)
@@ -40,4 +38,3 @@ class RF(Algorithm):
 
         # 转换为预测标签为真实标签
         print(predict)
-

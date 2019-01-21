@@ -32,12 +32,14 @@ class OrderPredicts():
         time_str = row['date']
         date_obj = datetime.datetime.strptime(time_str, "%Y-%m-%d")
         week = int(date_obj.strftime("%w"))
+        return week
+        '''
         if week == 6 or week == 0:
             return 1
         if row['is_special_day'] == 1:
             return 1
         return 0
-
+        '''
     '''
         正常国庆节和元旦 返回1，其他返回0
     '''
